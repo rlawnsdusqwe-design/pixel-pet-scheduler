@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="바탕화면을 걷는 도트 캐릭터 벌꿀오소리 릴리가 일정·할 일·알람을 챙겨주는 Windows 앱">
+<meta property="og:title" content="Pixel Pet Scheduler">
+<meta property="og:description" content="바탕화면을 걷는 도트 캐릭터가 일정을 챙겨드려요">
+<meta property="og:image" content="img/today.png">
+<title>Pixel Pet Scheduler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: 한 줄 기둥(960px) 위에 '바탕화면 미니어처' 히어로 → 기능 → 설치 단계 → 다운로드. 강조는 인디고, 꿀색은 포인트 한 곳에만. */
+:root{
+  --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceef3; --line:#dfe2e9;
+  --ink:#15171c; --ink-2:#434955; --muted:#767d8b;
+  --accent:#4a55cf; --accent-soft:#e7e9fb; --honey:#e8a92a; --ok:#1f9d6b; --warn:#c97a1e;
+  --desk:#cfd6e4; --desk-2:#b9c3d6; --taskbar:#e9edf4;
+  --f-display:"IBM Plex Sans KR","Noto Sans KR",system-ui,sans-serif;
+  --f-body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1014; --surface:#161920; --surface-2:#1d2129; --line:#2a2f39;
+  --ink:#eceef3; --ink-2:#c3c8d2; --muted:#8b92a0;
+  --accent:#8c95f4; --accent-soft:#242a4d; --honey:#f2c04f; --ok:#3cc28d; --warn:#e3a04a;
+  --desk:#2a3346; --desk-2:#222a3b; --taskbar:#1b2130; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e1014; --surface:#161920; --surface-2:#1d2129; --line:#2a2f39;
+  --ink:#eceef3; --ink-2:#c3c8d2; --muted:#8b92a0;
+  --accent:#8c95f4; --accent-soft:#242a4d; --honey:#f2c04f; --ok:#3cc28d; --warn:#e3a04a;
+  --desk:#2a3346; --desk-2:#222a3b; --taskbar:#1b2130; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 var(--f-body);-webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;letter-spacing:-.02em;margin:0}
+h1{font-size:clamp(34px,5.4vw,54px);line-height:1.12;font-weight:700}
+h2{font-size:clamp(24px,3.2vw,32px);line-height:1.25;font-weight:700}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:18px;color:var(--ink-2);max-width:34em}
+.muted{color:var(--muted)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+button{font:inherit;cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:10px;border-radius:10px;padding:13px 20px;font-weight:700;font-size:15.5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;transition:transform .12s,filter .15s}
+.btn:hover{filter:brightness(1.04)}.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#0e1014}}
+:root[data-theme="dark"] .btn.primary{color:#0e1014}
+.btn small{font:500 12px var(--f-mono);opacity:.8}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+section{padding-block:72px}
+.sec-head{display:flex;flex-direction:column;gap:12px;margin-bottom:32px;max-width:640px}
+
+/* ---------- 히어로 ---------- */
+.hero{padding-block:56px 40px;display:grid;grid-template-columns:1.05fr 1fr;gap:44px;align-items:center}
+.hero > *{min-width:0}
+.hero-copy{display:flex;flex-direction:column;gap:22px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font:500 12.5px var(--f-mono);color:var(--muted)}
+.desk{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/3.1;max-width:100%;
+  background:linear-gradient(180deg,var(--desk),var(--desk-2))}
+.desk .win{position:absolute;left:7%;top:9%;width:58%;height:52%;background:var(--surface);border-radius:10px;border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:7px}
+.desk .win i{display:block;height:8px;border-radius:4px;background:var(--surface-2)}
+.desk .win i:nth-child(1){width:40%;height:10px;background:var(--line)}
+.desk .win i.a{background:var(--accent-soft);width:80%}.desk .win i.h{background:color-mix(in srgb,var(--honey) 28%,transparent);width:55%}
+.desk .taskbar{position:absolute;left:0;right:0;bottom:0;height:9%;background:var(--taskbar);border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 4%}
+.desk .taskbar b{width:16px;height:16px;border-radius:4px;background:var(--line)}
+.desk .taskbar span{margin-left:auto;font:500 11px var(--f-mono);color:var(--muted)}
+#deskCanvas{position:absolute;left:0;bottom:9%;width:100%;height:46%;image-rendering:pixelated}
+.bubble{position:absolute;bottom:52%;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:7px 12px;font-size:13px;line-height:1.5;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);white-space:pre-line;max-width:62%;transform:translateX(-50%);transition:opacity .25s;pointer-events:none}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;margin-left:-5px;background:inherit;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
+
+/* ---------- 문장 데모 ---------- */
+.demo{display:grid;grid-template-columns:1fr 1.25fr;gap:20px;align-items:stretch}
+.demo > *{min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.panel-label{font:500 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between}
+#demoText{width:100%;min-height:260px;resize:vertical;font:15px/1.8 var(--f-body);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;outline:none}
+#demoText:focus{border-color:var(--accent)}
+.rows{display:flex;flex-direction:column}
+.r{display:grid;grid-template-columns:78px 86px 1fr;gap:10px;align-items:baseline;padding:10px 2px;border-bottom:1px solid var(--line)}
+.r:last-child{border-bottom:none}
+.k{font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 0;text-align:center}
+.k.event{background:var(--accent-soft);color:var(--accent)}
+.k.todo{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.k.auto{background:color-mix(in srgb,var(--honey) 22%,transparent);color:var(--warn)}
+.when{font:500 12.5px/1.45 var(--f-mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.what{min-width:0}.what b{font-weight:600;overflow-wrap:anywhere}.what small{display:block;color:var(--muted);font-size:12.5px}
+
+/* ---------- 기능 ---------- */
+.features{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.feat{display:flex;flex-direction:column;gap:12px;min-width:0}
+.feat figure{margin:0;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.feat img{display:block;width:100%;height:auto}
+.feat p{color:var(--ink-2);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:12.5px;padding:3px 9px;border-radius:20px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.wide{grid-column:1/-1;display:grid;grid-template-columns:1.4fr 1fr;gap:22px;align-items:center}
+.wide > *{min-width:0}
+.sprites{display:flex;flex-wrap:wrap;gap:6px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;justify-content:center}
+.sprites figure{margin:0;text-align:center;font:500 11px var(--f-mono);color:var(--muted)}
+.sprites canvas{width:96px;height:126px;display:block}
+
+/* ---------- 설치 ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;list-style:none;padding:0;margin:0;counter-reset:s}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;counter-increment:s;display:flex;flex-direction:column;gap:8px;min-width:0}
+.steps li::before{content:counter(s);font:600 13px var(--f-mono);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.steps p{font-size:14.5px;color:var(--ink-2)}
+kbd{font:500 12.5px var(--f-mono);background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+
+/* ---------- 다운로드 ---------- */
+.dl{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.dl > *{min-width:0}
+.dl-actions{display:flex;flex-direction:column;gap:10px;align-items:stretch;min-width:260px}
+.btn.off{opacity:.45;pointer-events:none}
+.dl-actions .btn{justify-content:center}
+#dlStatus{font-size:13px;color:var(--muted);min-height:20px}
+.faq{margin-top:28px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px 28px}
+.faq div{min-width:0}.faq b{display:block;font-weight:600;margin-bottom:2px}.faq p{color:var(--ink-2);font-size:14.5px}
+footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+@media (max-width:820px){
+  .hero,.demo,.wide,.dl{grid-template-columns:1fr}
+  .features,.faq{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .dl-actions{min-width:0}
+  section{padding-block:52px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>body{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Windows 데스크톱 앱 · v4.0</span>
+      <h1>바탕화면을 걷는 도트 캐릭터가 일정을 챙겨드려요</h1>
+      <p class="lead">메모를 붙여넣으면 일정과 할 일로 정리하고, 시간이 정해지지 않은 작업은 빈 시간에 배치합니다. 알람이 울리면 캐릭터가 화면 가운데로 달려와요.</p>
+      <div class="cta">
+        <a class="btn primary" href="#download"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>Windows용 다운로드 <small>74 MB</small></a>
+        <a class="btn" href="#try">문장 분석 체험하기</a>
+      </div>
+      <div class="meta"><span>Windows 10 / 11</span><span>설치 없이 실행</span><span>오프라인 동작</span><span>무료</span></div>
+    </div>
+    <div class="desk" aria-label="바탕화면 미리보기: 벌꿀오소리 캐릭터가 작업 표시줄 위를 걸어다님">
+      <div class="win"><i></i><i class="a"></i><i></i><i class="h"></i><i></i><i class="a"></i></div>
+      <canvas id="deskCanvas" width="480" height="168"></canvas>
+      <div class="bubble" id="deskBubble"></div>
+      <div class="taskbar"><b></b><b></b><b></b><span id="deskClock">09:41</span></div>
+    </div>
+  </header>
+
+  <section id="try">
+    <div class="sec-head">
+      <span class="eyebrow">문장으로 일정 만들기</span>
+      <h2>적어둔 그대로 붙여넣으면 끝</h2>
+      <p class="muted">아래 입력창을 고쳐 보세요. 앱에 들어 있는 분석기와 같은 코드가 이 페이지에서 바로 돌아갑니다. 날짜는 오늘 기준으로 계산돼요.</p>
+    </div>
+    <div class="demo">
+      <div class="panel">
+        <div class="panel-label"><span>입력</span><span>줄바꿈 · 쉼표로 구분</span></div>
+        <textarea id="demoText" spellcheck="false" aria-label="일정 문장 입력">내일 오후 3시 팀 회의 10분 전 알림
+금요일까지 분기 보고서 작성 2시간
+매일 아침 8시 약 먹기
+평일 저녁 7시 헬스
+다음주 수요일 10시 반 치과
+영어 단어 외우기 30분
+장보기, 택배 보내기
+모레까지 과제 제출 중요!!</textarea>
+      </div>
+      <div class="panel">
+        <div class="panel-label"><span>정리 결과</span><span id="demoCount"></span></div>
+        <div class="rows" id="demoRows"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">기능</span>
+      <h2>일정 관리는 깔끔하게, 캐릭터는 귀엽게</h2>
+    </div>
+    <div class="features">
+      <div class="feat">
+        <figure><img src="img/today.png" alt="오늘 화면: 할 일 목록, 오늘 일정, 집중 타이머, 펫 상태" loading="lazy"></figure>
+        <h3>오늘 할 일</h3>
+        <p>체크리스트와 진행률, 마감일 표시. 끝내지 못한 일은 다음 날로 자동 이월됩니다.</p>
+      </div>
+      <div class="feat">
+        <figure><img src="img/calendar-dark.png" alt="다크 모드 월간 캘린더와 날짜별 상세 패널" loading="lazy"></figure>
+        <h3>캘린더</h3>
+        <p>월간·주간 보기, 분류별 색상, 매일·평일·매주·매월 반복. 시스템 설정에 맞춰 다크 모드로 바뀌어요.</p>
+      </div>
+      <div class="feat">
+        <figure><img src="img/alarm.png" alt="집중 타이머 칩이 뜬 캐릭터와 알람 창" loading="lazy"></figure>
+        <h3>알람과 집중</h3>
+        <p>미리 알림, 알람 창과 소리, 5·10분 다시 알림. 뽀모도로 타이머가 돌아가는 동안 캐릭터가 옆에서 같이 공부합니다.</p>
+      </div>
+      <div class="feat">
+        <figure><img src="img/smart.png" alt="문장으로 일정 만들기 미리보기 표" loading="lazy"></figure>
+        <h3>자동 스케줄링</h3>
+        <p>"보고서 2시간"처럼 걸리는 시간만 적으면 기존 일정과 겹치지 않는 빈 시간을 찾아 배치해요. 추가 전에 표에서 고칠 수 있습니다.</p>
+      </div>
+      <div class="feat">
+        <figure><img src="img/widgets.png" alt="바탕화면에 띄운 달력 위젯과 데일리 위젯" loading="lazy"></figure>
+        <h3>바탕화면 위젯</h3>
+        <p>달력과 데일리 위젯을 바탕화면에 띄워 둘 수 있어요. 데일리 위젯은 오늘 할 일 완료율, 남은 일정 타임라인, 최근 7일 기록을 그래프로 보여줍니다. 항상 위·투명도·클릭 통과 잠금을 지원해요.</p>
+        <div class="chips"><span>달력 위젯</span><span>데일리 위젯</span><span>완료율 그래프</span><span>잠금 모드</span></div>
+      </div>
+      <div class="feat">
+        <h3>바탕화면 미니게임 · 큰 달력</h3>
+        <p>바탕화면 전체에 간식이 떨어지고, 릴리가 작업 표시줄 위를 달리며 받아요. 캘린더는 "크게 보기"로 창 전체를 달력으로 쓸 수 있습니다.</p>
+        <div class="chips"><span>45초 간식 받기</span><span>꿀 보상</span><span>달력 크게 보기</span></div>
+      </div>
+      <div class="wide">
+        <div class="feat">
+          <h3>벌꿀오소리 릴리</h3>
+          <p>128px 고해상도로 그린 릴리는 머리·팔·다리·꼬리가 따로 움직여요. 걷기, 공놀이, 씻기, 집중, 레벨업까지 행동마다 전용 모션과 표정이 있습니다. 할 일과 일정을 끝내면 꿀이 쌓이고, 모은 꿀로 모자와 리본을 사 줄 수 있어요. 기본 캐릭터 8종에, 그림 파일을 도트로 바꿔 나만의 캐릭터도 만들 수 있어요.</p>
+          <div class="chips"><span>배부름 · 기분 · 청결 · 기운</span><span>레벨업</span><span>미니게임</span><span>액세서리 7종</span><span>14가지 모션</span><span>13가지 표정</span><span>꿀 모으기</span><span>32/64/128 도트 편집기</span></div>
+        </div>
+        <div class="sprites" id="sprites" aria-label="벌꿀오소리 캐릭터의 동작 프레임"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="eyebrow">설치</span><h2>세 단계면 바로 실행</h2></div>
+    <ol class="steps">
+      <li><h3>내려받기</h3><p>아래 버튼으로 <kbd>PixelPetScheduler-win.zip</kbd>을 받아요.</p></li>
+      <li><h3>압축 풀기</h3><p>파일을 우클릭해 <kbd>압축 풀기</kbd>를 누르고, 원하는 폴더에 둡니다.</p></li>
+      <li><h3>실행</h3><p><kbd>PixelPetScheduler.exe</kbd>를 더블클릭해요. 파란 경고 창이 뜨면 <kbd>추가 정보</kbd> → <kbd>실행</kbd>을 누르세요.</p></li>
+    </ol>
+  </section>
+
+  <section id="download">
+    <div class="dl">
+      <div>
+        <span class="eyebrow">다운로드</span>
+        <h2 style="margin-top:10px">Pixel Pet Scheduler 4.0</h2>
+        <p class="muted" style="margin-top:8px">Windows 10/11 64비트 · 단일 실행 파일 · 74.3 MB zip</p>
+      </div>
+      <div class="dl-actions">
+        <a class="btn primary" id="dlWin"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>Windows용 받기</a>
+        <div id="dlStatus" role="status"></div>
+        <a class="btn" id="dlSrc">GitHub에서 소스 보기</a>
+      </div>
+    </div>
+    <div class="faq">
+      <div><b>Mac에서도 되나요?</b><p>지금은 Windows용 실행 파일만 있어요. Mac에서는 소스 코드를 받아 <kbd>npm install</kbd> → <kbd>npm start</kbd>로 실행할 수 있습니다.</p></div>
+      <div><b>데이터는 어디에 저장되나요?</b><p>내 컴퓨터의 <kbd>%APPDATA%\pixel-pet-scheduler</kbd>에만 저장되고, 인터넷으로 보내지지 않아요.</p></div>
+      <div><b>컴퓨터를 켤 때 자동으로 실행하려면?</b><p><kbd>Win + R</kbd> → <kbd>shell:startup</kbd>을 열고 exe의 바로가기를 넣어 두세요.</p></div>
+      <div><b>캐릭터는 어떻게 끄나요?</b><p>캐릭터나 작업 표시줄 아이콘을 우클릭해 <kbd>종료</kbd>를 누르면 됩니다.</p></div>
+    </div>
+  </section>
+
+  <footer><span>Pixel Pet Scheduler 4.0</span><span>v1 · v2 사용자 데이터는 그대로 이어집니다</span></footer>
+</div>
+
+<script src="js/shared.js"></script>
+<script src="js/lily.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/render.js"></script>
+<script src="js/parse.js"></script>
+<script>
+(() => {
+  const S = window.Shared, ch = window.BuiltinCharacters.list[0];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- 히어로: 작업 표시줄 위를 걷는 캐릭터 ----------
+  const cv = document.getElementById('deskCanvas'), g = cv.getContext('2d');
+  const sprite = document.createElement('canvas'); sprite.width = 128; sprite.height = 168;
+  const sctx = sprite.getContext('2d');
+  const bubble = document.getElementById('deskBubble');
+  const LINES = ['다음 일정은 15:00 팀 회의!', '할 일 3개 남았어. 같이 하자', '보고서 작성을 11:00에\n넣어뒀어', '물 한 잔 마셨어?', '집중 25분 시작!'];
+  let x = 300, dir = -1, t = 0, mode = 'walk', timer = 90, line = 0;
+  g.imageSmoothingEnabled = true;
+  function frame() {
+    t++;
+    if (mode === 'walk') {
+      x += dir * 1.1;
+      if (x < 40) { x = 40; dir = 1; } if (x > cv.width - 40) { x = cv.width - 40; dir = -1; }
+      if (--timer <= 0) { mode = 'talk'; timer = 150; bubble.textContent = LINES[line++ % LINES.length]; bubble.style.opacity = 1; }
+    } else if (--timer <= 0) { mode = 'walk'; timer = 120 + Math.random() * 100; bubble.style.opacity = 0; if (Math.random() < .4) dir *= -1; }
+    const f = mode === 'walk' ? 'walk' : (Math.floor(t / 60) % 4 === 3 ? 'wave' : 'idle');
+    Render.renderPet(sctx, ch, f, { flip: dir < 0, acc: 'ribbon' });
+    g.clearRect(0, 0, cv.width, cv.height);
+    g.drawImage(sprite, Math.round(x - 48), cv.height - 126, 96, 126); // 128px 리그를 96px로
+    bubble.style.left = (x / cv.width * 100) + '%';
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  bubble.style.opacity = 0;
+  frame();
+  const clock = document.getElementById('deskClock'), tick = () => (clock.textContent = S.hm(new Date()));
+  tick(); setInterval(tick, 30000);
+
+  // ---------- 동작 프레임 ----------
+  const SP = [['idle', '기본'], ['walk', '걷기'], ['cheer', '기쁨'], ['wave', '인사'], ['eat', '꿀 먹기'], ['focus', '집중'], ['play', '공놀이'], ['wash', '씻기'], ['stroke', '쓰다듬'], ['proud', '레벨업'], ['surprised', '놀람'], ['dizzy', '어질어질'], ['sad', '슬픔'], ['sleep', '잠']];
+  const box = document.getElementById('sprites'), cvs = [];
+  const spriteLoop = () => { for (const [c, k] of cvs) Render.renderPet(c.getContext('2d'), ch, k); if (!reduce) requestAnimationFrame(spriteLoop); };
+  setTimeout(spriteLoop, 0);
+  for (const [k, l] of SP) {
+    const fig = document.createElement('figure'), c = document.createElement('canvas'); c.width = 128; c.height = 168;
+    fig.append(c, l); box.append(fig); cvs.push([c, k]);
+  }
+
+  // ---------- 문장 분석 데모 ----------
+  const KIND = { event: '일정', todo: '할 일', auto: '자동 배치' }, DOW = ['일', '월', '화', '수', '목', '금', '토'];
+  const fmt = (ds) => { const d = S.parseYmd(ds); return `${d.getMonth() + 1}/${d.getDate()} (${DOW[d.getDay()]})`; };
+  const end = (t, dur) => { const [h, m] = t.split(':').map(Number), v = h * 60 + m + dur; return `${S.pad(Math.floor(v / 60) % 24)}:${S.pad(v % 60)}`; };
+  const rows = document.getElementById('demoRows'), ta = document.getElementById('demoText');
+  function run() {
+    const items = SmartParse.autoSchedule(SmartParse.parse(ta.value), [], { dayStart: '09:00', dayEnd: '21:00' });
+    rows.replaceChildren();
+    for (const it of items) {
+      const r = document.createElement('div'); r.className = 'r';
+      const k = document.createElement('span'); k.className = 'k ' + it.kind; k.textContent = KIND[it.kind];
+      const w = document.createElement('span'); w.className = 'when';
+      w.textContent = (it.date ? fmt(it.date) : '') + (it.time ? '\n' + it.time + (it.dur ? '–' + end(it.time, it.dur) : '') : '');
+      w.style.whiteSpace = 'pre-line';
+      const what = document.createElement('span'); what.className = 'what';
+      const b = document.createElement('b'); b.textContent = it.title;
+      const extra = [it.repeat !== 'none' ? S.REPEAT_LABEL[it.repeat] + ' 반복' : '', it.remind ? it.remind + '분 전 알림' : '',
+        it.due ? '마감 ' + fmt(it.due) : '', it.autoPlaced ? '빈 시간에 배치' : '', it.important ? '중요' : '', S.catOf(it.category).label].filter(Boolean).join(' · ');
+      const sm = document.createElement('small'); sm.textContent = extra;
+      what.append(b, sm); r.append(k, w, what); rows.append(r);
+    }
+    const ev = items.filter((i) => i.kind !== 'todo').length;
+    document.getElementById('demoCount').textContent = `일정 ${ev} · 할 일 ${items.length - ev}`;
+    if (!items.length) { const e = document.createElement('p'); e.className = 'muted'; e.textContent = '일정을 적어 보세요. 예: 내일 3시 회의'; rows.append(e); }
+  }
+  let deb; ta.addEventListener('input', () => { clearTimeout(deb); deb = setTimeout(run, 180); });
+  run();
+
+  // ---------- 다운로드 ----------
+  // 실행 파일과 소스는 외부(구글 드라이브, GitHub Releases 등)에 올리고 아래 주소만 바꿔 주세요.
+  const LINKS = { win: 'https://github.com/rlawnsdusqwe-design/pixel-pet-scheduler/raw/main/download/PixelPetScheduler-win.zip', source: 'https://github.com/rlawnsdusqwe-design/pixel-pet-scheduler' };
+  const status = document.getElementById('dlStatus');
+  for (const [key, id] of [['win', 'dlWin'], ['source', 'dlSrc']]) {
+    const a = document.getElementById(id);
+    if (LINKS[key]) { a.href = LINKS[key]; a.target = '_blank'; a.rel = 'noopener'; }
+    else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); a.classList.add('off'); }
+  }
+  if (!LINKS.win) status.textContent = '다운로드 링크를 준비하고 있어요.';
+})();
+</script>
+
+</body>
+</html>
