@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:">
+<title>Pixel Pet Scheduler</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <canvas id="mini" width="128" height="168"></canvas>
+      <div class="brand-text"><div class="brand-name" id="petName">Pixel Pet</div><div class="brand-meta"><span id="hdrLevel">Lv.1</span><span class="dot"></span><span id="hdrCoins">꿀 0</span></div></div>
+    </div>
+    <button class="cta" id="smartOpen"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.5 2.5M15.2 15.2l2.5 2.5M6.3 17.7l2.5-2.5M15.2 8.8l2.5-2.5"/></svg>문장으로 추가</button>
+    <nav>
+      <button class="tab" data-tab="today"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8.5 12.2 2.4 2.4 4.6-5"/></svg><span>오늘</span></button>
+      <button class="tab" data-tab="calendar"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>캘린더</span></button>
+      <button class="tab" data-tab="focus"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.2 2M9.5 2.8h5"/></svg><span>집중</span></button>
+      <div class="nav-label">펫</div>
+      <button class="tab" data-tab="pet"><svg viewBox="0 0 24 24"><path d="M19.4 12.8 12 20.2l-7.4-7.4a4.5 4.5 0 0 1 7.4-5.2 4.5 4.5 0 0 1 7.4 5.2z"/></svg><span>돌보기 · 상점</span></button>
+      <button class="tab" data-tab="character"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg><span>캐릭터</span></button>
+      <div class="nav-spacer"></div>
+      <button class="tab" data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg><span>설정</span></button>
+    </nav>
+  </aside>
+
+<main>
+  <!-- ================= 오늘 ================= -->
+  <section id="today">
+    <div class="page-head">
+      <div><h1 id="todayTitle">오늘</h1><p class="sub" id="todaySub"></p></div>
+      <div class="actions"><button id="dailyWidget" class="wbtn" data-w="daily">데일리 위젯 띄우기</button><button id="todaySmart" class="primary">문장으로 추가</button></div>
+    </div>
+    <div class="cols">
+      <div class="card grow">
+        <div class="card-head"><h2>할 일</h2><span class="muted" id="todayProgressText"></span></div>
+        <div class="progress"><i id="todayProgress"></i></div>
+        <div id="carryNotice" class="notice" hidden></div>
+        <div id="todayTodos" class="todo-box"></div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <div class="card-head"><h2>일정</h2><button class="small" id="todayAddEvent">새 일정</button></div>
+          <div id="todayEvents"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>집중</h2><span class="muted" id="todayFocusCount"></span></div>
+          <div class="row-gap"><button class="primary grow" id="todayFocusBtn">집중 시작</button><button id="todayFocusGo">타이머</button></div>
+        </div>
+        <div class="card clickable" id="todayPetCard">
+          <div class="card-head"><h2>펫 상태</h2><span class="muted">돌보기 →</span></div>
+          <div id="todayStats" class="stats compact"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 캘린더 ================= -->
+  <section id="calendar">
+    <div class="page-head">
+      <div class="cal-nav"><button class="icon-btn" id="calPrev" aria-label="이전">‹</button><h1 id="calLabel"></h1><button class="icon-btn" id="calNext" aria-label="다음">›</button><button id="calToday" class="small">오늘</button></div>
+      <div class="actions">
+        <div class="legend" id="calLegend"></div>
+        <div class="seg" id="calView"><button data-v="month" class="on">월</button><button data-v="week">주</button></div>
+        <button id="calExpand">크게 보기</button>
+        <button id="calWidget" class="wbtn" data-w="calendar">바탕화면에 띄우기</button>
+        <button id="calSmart" class="primary">문장으로 추가</button>
+      </div>
+    </div>
+    <div class="cal-body">
+      <div class="card cal-main"><div id="calGrid"></div></div>
+      <div class="card day-panel">
+        <div class="card-head"><h2 id="dayTitle"></h2><button class="icon-btn" id="dayClose" title="닫기">×</button></div>
+        <div id="dayEvents"></div>
+        <h3>할 일</h3>
+        <div id="dayTodos" class="todo-box"></div>
+        <h3 id="formTitle">새 일정</h3>
+        <form id="evForm" autocomplete="off">
+          <input id="fTitle" placeholder="일정 제목" required>
+          <div class="grid2">
+            <label>날짜<input type="date" id="fDate" required></label>
+            <label>시간<input type="time" id="fTime"></label>
+            <label>소요 시간<select id="fDur"><option value="">-</option><option value="30">30분</option><option value="60">1시간</option><option value="90">1시간 30분</option><option value="120">2시간</option><option value="180">3시간</option></select></label>
+            <label>반복<select id="fRepeat"><option value="none">안 함</option><option value="daily">매일</option><option value="weekdays">평일</option><option value="weekly">매주</option><option value="monthly">매월</option></select></label>
+            <label>분류<select id="fCat"></select></label>
+            <label>미리 알림<select id="fRemind"><option value="0">없음</option><option value="5">5분 전</option><option value="10">10분 전</option><option value="30">30분 전</option><option value="60">1시간 전</option></select></label>
+            <label class="span2">알람 방식<select id="fAlarm"><option value="strong">알람 창 + 소리</option><option value="light">말풍선 알림</option></select></label>
+          </div>
+          <div class="row-gap end"><button type="button" id="fDelete" class="danger" hidden>삭제</button><button type="button" id="fCancel" hidden>취소</button><button class="primary" type="submit" id="fSubmit">추가</button></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 집중 ================= -->
+  <section id="focus">
+    <div class="page-head"><div><h1>집중</h1><p class="sub">뽀모도로 타이머 · 완료하면 경험치 +25, 꿀 +10</p></div></div>
+    <div class="focus-wrap card">
+      <canvas id="focusPet" width="128" height="168"></canvas>
+      <div class="focus-mode" id="focusMode">준비</div>
+      <div class="focus-time" id="focusTime">25:00</div>
+      <div class="progress big"><i id="focusBar"></i></div>
+      <div class="row-gap center" id="focusBtns"></div>
+      <div class="row-gap center muted focus-opts">
+        집중 <select id="fmFocus"></select> 분 <span class="sep"></span> 휴식 <select id="fmBreak"></select> 분
+      </div>
+      <div class="focus-stats"><div class="tomatoes" id="focusTomatoes"></div><div class="week-bars" id="focusWeek"></div></div>
+    </div>
+  </section>
+
+  <!-- ================= 돌보기 ================= -->
+  <section id="pet">
+    <div class="page-head"><div><h1>돌보기 · 상점</h1><p class="sub">할 일과 일정을 완료하면 꿀이 쌓여요</p></div></div>
+    <div class="cols">
+      <div class="side wide">
+        <div class="card pet-card">
+          <canvas id="petBig" width="128" height="168"></canvas>
+          <div class="grow">
+            <h2 id="petTitle"></h2>
+            <div class="muted" id="petLevelText"></div>
+            <div class="progress"><i id="petXp"></i></div>
+            <div class="coins" id="petCoins"></div>
+          </div>
+        </div>
+        <div class="card"><h2>상태</h2><div id="petStats" class="stats"></div></div>
+        <div class="card">
+          <h2>돌봐주기</h2>
+          <div class="care">
+            <button data-care="free"><span>🥣</span>기본 밥<small id="cdFree"></small></button>
+            <button data-care="wash"><span>🛁</span>씻기기<small id="cdWash"></small></button>
+            <button data-care="play"><span>🎾</span>놀아주기<small id="cdPlay"></small></button>
+            <button data-care="game" class="primary"><span>🎮</span>미니게임<small>간식 받기</small></button>
+          </div>
+          <button id="desktopGame" style="width:100%;margin-top:10px">바탕화면에서 미니게임 하기</button>
+          <p class="hint">바탕화면 캐릭터를 마우스로 좌우로 문지르면 쓰다듬을 수 있어요.</p>
+        </div>
+      </div>
+      <div class="grow">
+        <div class="card"><h2>가방</h2><div id="bag" class="items"></div></div>
+        <div class="card"><h2>음식</h2><div id="shopFood" class="items"></div></div>
+        <div class="card"><h2>액세서리</h2><div id="shopAcc" class="items acc"></div></div>
+      </div>
+    </div>
+    <div id="gameModal" class="modal" hidden>
+      <div class="dialog game-card">
+        <div class="card-head"><h2>간식 받기</h2><span id="gameHud" class="muted"></span><button class="icon-btn" id="gameClose">×</button></div>
+        <canvas id="game" width="640" height="420"></canvas>
+        <p class="hint">마우스나 ← → 키로 움직여요. ⭐ +5점, 💣 -5점</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 캐릭터 ================= -->
+  <section id="character">
+    <div class="page-head"><div><h1>캐릭터</h1><p class="sub">기본 캐릭터를 고르거나 직접 그리고, 그림을 도트로 바꿀 수 있어요</p></div></div>
+    <div class="card">
+      <div class="gallery" id="gallery"></div>
+    </div>
+    <div class="editor">
+      <div class="card">
+        <div class="seg" id="frameTabs"></div>
+        <canvas id="board" width="512" height="512"></canvas>
+        <p class="hint">좌클릭 그리기 · 우클릭 지우기 · Alt+클릭 색 추출 · Ctrl+Z 되돌리기 · <span id="resText"></span></p>
+      </div>
+      <div class="tools">
+        <div class="card">
+          <h2>도구</h2>
+          <div class="seg" id="toolSeg">
+            <button data-tool="pen" class="on">펜</button><button data-tool="eraser">지우개</button>
+            <button data-tool="fill">채우기</button><button data-tool="pick">스포이드</button>
+          </div>
+          <div class="row-gap" style="margin-top:12px"><input type="color" id="color" value="#2b2b3a"><span id="colorHex" class="mono">#2b2b3a</span></div>
+          <div class="palette" id="palette"></div>
+        </div>
+        <div class="card">
+          <h2>이미지로 만들기</h2>
+          <p class="hint">PNG/JPG를 도트로 변환해요. 배경이 투명한 PNG가 가장 깔끔해요.</p>
+          <div class="grid2">
+            <label>해상도<select id="optRes"><option value="32">32 × 32</option><option value="64">64 × 64</option><option value="128">128 × 128</option></select></label>
+            <label>적용 범위<select id="optTarget"><option value="all">전체 (동작 자동 생성)</option><option value="frame">현재 프레임만</option></select></label>
+          </div>
+          <label class="check"><input type="checkbox" id="optBg" checked> 단색 배경 제거</label>
+          <label class="check"><input type="checkbox" id="optOutline" checked> 외곽선 추가</label>
+          <label>색 개수 <b id="colorsN">12</b><input type="range" id="optColors" min="4" max="32" value="12"></label>
+          <input type="file" id="imgFile" accept="image/*">
+        </div>
+        <div class="card">
+          <h2>미리보기</h2>
+          <div class="row-gap"><canvas id="preview" width="128" height="168"></canvas>
+            <div class="grow"><label>이름<input id="charName"></label>
+            <label class="check"><input type="checkbox" id="pvAcc" checked> 액세서리 표시</label></div></div>
+          <div class="seg" style="margin-top:12px">
+            <button id="copyIdle">기본 → 현재</button><button id="flipBtn">좌우 반전</button>
+            <button id="clearBtn">비우기</button><button id="undoBtn">되돌리기</button>
+          </div>
+          <div class="row-gap" style="margin-top:12px">
+            <button id="saveMine" class="grow">내 캐릭터로 저장</button>
+            <button class="primary grow" id="saveChar">바탕화면에 적용</button>
+          </div>
+          <p class="hint" id="saveMsg"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 설정 ================= -->
+  <section id="settings">
+    <div class="page-head"><div><h1>설정</h1></div></div>
+    <div class="card settings">
+      <h2>캐릭터</h2>
+      <div class="set-row"><div><b>크기</b><p class="hint" id="scaleV"></p></div><input type="range" id="sScale" min="1" max="6" step="1"></div>
+      <div class="set-row"><div><b>이동 속도</b><p class="hint" id="speedV"></p></div><input type="range" id="sSpeed" min="0.5" max="5" step="0.5"></div>
+      <div class="set-row"><div><b>돌아다니기</b><p class="hint">끄면 한 자리에 머물러요</p></div><input type="checkbox" class="switch" id="sWalk"></div>
+      <div class="set-row"><div><b>마우스 따라오기</b></div><input type="checkbox" class="switch" id="sFollow"></div>
+      <div class="set-row"><div><b>말풍선 혼잣말</b><p class="hint">4분마다 할 일·상태 안내</p></div><input type="checkbox" class="switch" id="sChat"></div>
+      <div class="set-row"><div><b>수면 시간</b><p class="hint">자는 동안 기운이 회복돼요</p></div>
+        <div class="row-gap"><input type="checkbox" class="switch" id="sSleep"><input type="time" id="sSleepStart"><span class="muted">–</span><input type="time" id="sSleepEnd"></div></div>
+      <h2>알람</h2>
+      <div class="set-row"><div><b>알람 소리</b></div><div class="row-gap"><select id="sSound"></select><button id="sSoundTest">미리 듣기</button></div></div>
+      <div class="set-row"><div><b>볼륨</b></div><input type="range" id="sVolume" min="0" max="1" step="0.05"></div>
+      <div class="set-row"><div><b>기본 알람 방식</b></div><select id="sDefAlarm"><option value="strong">알람 창 + 소리</option><option value="light">말풍선 알림</option></select></div>
+      <div class="set-row"><div><b>알람 테스트</b><p class="hint">알람 창이 뜨고 캐릭터가 화면 가운데로 와요</p></div><button id="sAlarmTest">테스트</button></div>
+      <h2>자동 스케줄링</h2>
+      <div class="set-row"><div><b>자동 배치 시간대</b><p class="hint">시간이 정해지지 않은 작업을 이 시간 안의 빈 곳에 배치해요</p></div>
+        <div class="row-gap"><input type="time" id="sDayStart"><span class="muted">–</span><input type="time" id="sDayEnd"></div></div>
+      <div class="set-row"><div><b>못 끝낸 할 일 다음 날로 이월</b></div><input type="checkbox" class="switch" id="sCarry"></div>
+      <div class="set-row"><div><b>집중 후 자동 휴식</b></div><input type="checkbox" class="switch" id="sAutoBreak"></div>
+      <h2>시스템</h2>
+      <div class="set-row"><div><b>시작 시 자동 실행</b></div><input type="checkbox" class="switch" id="sLogin"></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<!-- ================= 문장으로 추가 ================= -->
+<div id="smartModal" class="modal" hidden>
+  <div class="dialog smart">
+    <div class="dialog-head">
+      <div><h2>문장으로 일정 만들기</h2><p class="sub">메모·메신저·메일 내용을 그대로 붙여넣으면 일정과 할 일로 정리하고, 시간이 정해지지 않은 작업은 빈 시간에 배치해요.</p></div>
+      <button class="icon-btn" id="smartClose">×</button>
+    </div>
+    <div id="smartInput">
+      <textarea id="smartText" spellcheck="false" placeholder="예시&#10;내일 오후 3시 팀 회의 10분 전 알림&#10;금요일까지 분기 보고서 작성 2시간&#10;매일 아침 8시 약 먹기&#10;장보기, 택배 보내기"></textarea>
+      <div class="row-gap"><button id="smartExample" class="ghost">예시 넣기</button><span class="grow muted" id="smartHint">줄바꿈 · 쉼표 · 글머리 기호로 구분돼요</span><button id="smartParse" class="primary">분석하기</button></div>
+    </div>
+    <div id="smartPreview" hidden>
+      <div class="smart-table" id="smartRows"></div>
+      <div class="row-gap end"><span class="grow muted" id="smartSummary"></span><button id="smartBack">다시 입력</button><button class="primary" id="smartApply">추가하기</button></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<script src="shared.js"></script>
+<script src="lily.js"></script>
+<script src="characters.js"></script>
+<script src="render.js"></script>
+<script src="sound.js"></script>
+<script src="parse.js"></script>
+<script src="panel-core.js"></script>
+<script src="panel-today.js"></script>
+<script src="panel-calendar.js"></script>
+<script src="panel-focus.js"></script>
+<script src="panel-pet.js"></script>
+<script src="panel-character.js"></script>
+<script src="panel-settings.js"></script>
+<script src="panel-smart.js"></script>
+<script src="panel-init.js"></script>
+</body></html>

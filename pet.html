@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<style>
+  html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  #pet{position:absolute;bottom:0;left:50%;transform:translateX(-50%);image-rendering:pixelated;cursor:grab}
+  #pet.dragging{cursor:grabbing}
+  #bubble{position:absolute;left:50%;transform:translateX(-50%) translateY(6px);width:max-content;max-width:236px;box-sizing:border-box;
+    background:rgba(255,255,255,.97);color:#14161a;border:1px solid rgba(16,24,40,.08);border-radius:12px;padding:8px 12px;font-size:12.5px;line-height:1.55;
+    box-shadow:0 6px 20px rgba(16,24,40,.16);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:pre-line;word-break:keep-all}
+  #bubble.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;cursor:pointer}
+  #bubble::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;width:12px;height:12px;background:inherit;transform:rotate(45deg);border-right:1px solid rgba(16,24,40,.08);border-bottom:1px solid rgba(16,24,40,.08)}
+  #chip{position:absolute;left:50%;transform:translateX(-50%);background:#4f5bd5;color:#fff;border-radius:20px;font-weight:600;
+    font-size:11px;padding:2px 9px;display:none;white-space:nowrap;font-variant-numeric:tabular-nums;box-shadow:0 2px 8px rgba(16,24,40,.2)}
+  #gift{position:absolute;left:50%;font-size:22px;display:none;animation:bounce .6s infinite alternate;pointer-events:none}
+  @keyframes bounce{from{transform:translate(-50%,0)}to{transform:translate(-50%,-8px)}}
+  .emote{position:absolute;font-size:18px;pointer-events:none;animation:float 1.6s ease-out forwards}
+  @keyframes float{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1)}}
+</style></head>
+<body>
+  <div id="bubble"></div>
+  <div id="chip"></div>
+  <div id="gift">🎁</div>
+  <canvas id="pet" width="128" height="168"></canvas>
+  <script src="shared.js"></script>
+  <script src="render.js"></script>
+  <script src="sound.js"></script>
+  <script src="pet.js"></script>
+</body></html>

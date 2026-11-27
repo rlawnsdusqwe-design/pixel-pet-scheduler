@@ -1,0 +1,44 @@
+{
+  "name": "pixel-pet-scheduler",
+  "version": "4.0.0",
+  "description": "바탕화면을 돌아다니는 도트 캐릭터 일정 관리 앱",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable",
+    "build:mac": "electron-builder --mac dmg"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.pixelpet.scheduler",
+    "productName": "PixelPetScheduler",
+    "files": [
+      "*.js",
+      "*.html",
+      "*.css",
+      "!dist/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "PixelPetScheduler.exe"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rlawnsdusqwe-design/pixel-pet-scheduler.git"
+  },
+  "homepage": "https://github.com/rlawnsdusqwe-design/pixel-pet-scheduler"
+}

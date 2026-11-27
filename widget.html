@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>위젯</title>
+<style>
+  :root{--bg:#ffffff;--bg2:#f5f6f8;--line:#e6e8ec;--text:#14161a;--text2:#3d434d;--muted:#7b8290;--accent:#4f5bd5;--accent2:#eef0fd;--ok:#1f9d6b;--warn:#d9822b;--honey:#e8a92a}
+  @media (prefers-color-scheme:dark){:root{--bg:#171a20;--bg2:#1d2129;--line:#2a2f39;--text:#eceef2;--text2:#c4c9d2;--muted:#8a919e;--accent:#8c95f4;--accent2:#242a4d;--ok:#3cc28d;--warn:#e3a04a;color-scheme:dark}}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:13px/1.5 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;user-select:none}
+  .bar{height:34px;display:flex;align-items:center;gap:4px;padding:0 6px 0 12px;-webkit-app-region:drag;border-bottom:1px solid var(--line)}
+  .bar b{font-size:12.5px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar button{-webkit-app-region:no-drag;border:none;background:transparent;color:var(--muted);width:26px;height:26px;border-radius:6px;cursor:pointer;display:grid;place-items:center;padding:0}
+  .bar button:hover{background:var(--bg2);color:var(--text)}
+  .bar button.on{color:var(--accent);background:var(--accent2)}
+  .bar svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  main{height:calc(100% - 34px);overflow:auto;padding:12px}
+  body.locked .bar{border-bottom-color:transparent}
+  body.locked .bar button:not(#lockBtn){visibility:hidden}
+  input[type=range]{width:70px;accent-color:var(--accent);-webkit-app-region:no-drag}
+
+  /* 달력 */
+  .mhead{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .mhead h2{font-size:16px;margin:0;flex:1}
+  .mhead button{border:1px solid var(--line);background:var(--bg);color:var(--text2);border-radius:6px;width:24px;height:24px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .dow{font-size:10.5px;color:var(--muted);text-align:center;padding-bottom:2px;font-weight:600}
+  .c{min-height:var(--ch,62px);border-radius:6px;padding:3px;background:var(--bg2);overflow:hidden;cursor:pointer}
+  .c.o{opacity:.4}
+  .c .n{font-size:11px;font-weight:600;display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;border-radius:50%}
+  .c.t .n{background:var(--accent);color:#fff}
+  .c i{display:block;font-style:normal;font-size:10px;line-height:1.35;margin-top:1px;padding:0 3px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .agenda{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  .ag{display:flex;gap:8px;padding:3px 0;font-size:12px}.ag span:first-child{color:var(--muted);width:78px;flex:none;font-variant-numeric:tabular-nums}
+
+  /* 데일리 */
+  .top{display:flex;gap:14px;align-items:center}
+  .date{flex:1}.date b{display:block;font-size:22px;letter-spacing:-.02em}.date span{color:var(--muted);font-size:12px}
+  .ring{width:84px;height:84px;position:relative;flex:none}
+  .ring svg{width:84px;height:84px;transform:rotate(-90deg)}
+  .ring div{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:11px;color:var(--muted);line-height:1.2}
+  .ring div b{display:block;font-size:19px;color:var(--text)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+  .stat{background:var(--bg2);border-radius:8px;padding:7px 9px}
+  .stat b{display:block;font-size:16px;font-variant-numeric:tabular-nums}.stat span{font-size:11px;color:var(--muted)}
+  h3{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 6px}
+  .todo{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .todo:last-child{border-bottom:none}
+  .todo input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+  .todo.d span{text-decoration:line-through;color:var(--muted)}
+  .add{display:flex;gap:6px;margin-top:6px}
+  .add input{flex:1;font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:5px 8px;outline:none}
+  .tl{position:relative;padding-left:14px;border-left:2px solid var(--line);margin-left:4px}
+  .ev{position:relative;padding:3px 0 3px 6px;font-size:12.5px}
+  .ev::before{content:"";position:absolute;left:-19px;top:9px;width:8px;height:8px;border-radius:50%;background:var(--c,var(--accent));box-shadow:0 0 0 2px var(--bg)}
+  .ev.past{color:var(--muted)}
+  .ev b{font-variant-numeric:tabular-nums;margin-right:6px}
+  .now{position:relative;height:0;border-top:2px dashed var(--warn);margin:4px 0 4px -14px}
+  .now span{position:absolute;right:0;top:-9px;font-size:10px;color:var(--warn);background:var(--bg);padding:0 3px}
+  .bars{display:flex;align-items:flex-end;gap:6px;height:64px}
+  .bars div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--muted)}
+  .bars i{display:block;width:100%;max-width:22px;border-radius:4px;background:var(--accent);min-height:2px}
+  .bars div.today i{background:var(--honey)}
+  .empty{color:var(--muted);font-size:12px;padding:4px 0}
+</style></head>
+<body>
+  <div class="bar">
+    <b id="title"></b>
+    <input type="range" id="opacity" min="0.35" max="1" step="0.05" title="투명도">
+    <button id="pinBtn" title="항상 위에"><svg viewBox="0 0 24 24"><path d="M12 17v5M9 3h6l-1 6 3 3H7l3-3z"/></svg></button>
+    <button id="openBtn" title="앱에서 열기"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button>
+    <button id="lockBtn" title="잠금 (클릭 통과)"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
+    <button id="closeBtn" title="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <main id="main"></main>
+  <script src="shared.js"></script>
+  <script src="widget.js"></script>
+</body></html>

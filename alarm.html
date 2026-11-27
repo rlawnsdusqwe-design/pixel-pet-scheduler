@@ -1,0 +1,39 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<style>
+  :root{--bg:#ffffff;--text:#14161a;--muted:#7b8290;--line:#e6e8ec;--accent:#4f5bd5;--soft:#f5f6f8}
+  @media (prefers-color-scheme:dark){:root{--bg:#171a20;--text:#eceef2;--muted:#8a919e;--line:#2c313b;--accent:#7b85f0;--soft:#1d2129}}
+  html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;color:var(--text);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .card{position:absolute;inset:14px;background:var(--bg);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.28);
+    display:flex;flex-direction:column;align-items:center;padding:18px 20px 16px;box-sizing:border-box;-webkit-app-region:drag;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+  .top{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+  .cat{display:inline-block;width:8px;height:8px;border-radius:50%}
+  .stage{background:var(--soft);border-radius:14px;width:100%;display:flex;justify-content:center;margin:12px 0 10px}
+  canvas{image-rendering:pixelated;width:128px;height:168px;margin:0}
+  .time{font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+  .title{font-size:15px;text-align:center;margin:4px 0 14px;word-break:keep-all;max-height:44px;overflow:hidden;color:var(--text)}
+  .btns{display:flex;gap:8px;-webkit-app-region:no-drag;width:100%}
+  button{flex:1;font:inherit;font-size:13.5px;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 0;cursor:pointer;transition:filter .15s,background .15s}
+  button:hover{background:var(--soft)}
+  .ok{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.ok:hover{background:var(--accent);filter:brightness(1.07)}
+  .more{font-size:11.5px;color:var(--muted);margin-top:8px;height:14px}
+</style></head>
+<body>
+  <div class="card">
+    <div class="top"><span class="cat" id="cat"></span><span id="label">알람</span></div>
+    <div class="stage"><canvas id="cv" width="128" height="168"></canvas></div>
+    <div class="time" id="time"></div>
+    <div class="title" id="title"></div>
+    <div class="btns">
+      <button id="s5">5분 후</button><button id="s10">10분 후</button><button class="ok" id="ok">확인</button>
+    </div>
+    <div class="more" id="more"></div>
+  </div>
+  <script src="shared.js"></script>
+  <script src="render.js"></script>
+  <script src="sound.js"></script>
+  <script src="alarm.js"></script>
+</body></html>
