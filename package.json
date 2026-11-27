@@ -1,6 +1,6 @@
 {
   "name": "pixel-pet-scheduler",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "바탕화면을 돌아다니는 도트 캐릭터 일정 관리 앱",
   "main": "main.js",
   "scripts": {

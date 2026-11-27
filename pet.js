@@ -41,9 +41,9 @@ function frameName() {
   }
 }
 function layout() {
-  const cssW = 32 * settings.scale; cssH = Math.round(cssW * 84 / 64);
-  cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
-  cv.style.imageRendering = character && character.size >= 128 && cssW < 128 ? 'auto' : 'pixelated';
+  if (!character || !settings) return;
+  Render.fit(cv, 32 * settings.scale, character.size);
+  cssH = parseFloat(cv.style.height);
   chip.style.bottom = (cssH + 2) + 'px';
   giftEl.style.bottom = (cssH - 4) + 'px';
   bubble.style.bottom = (cssH + 26) + 'px';
@@ -165,6 +165,8 @@ api.onGift((v) => { giftEl.style.display = v ? 'block' : 'none'; });
 api.onCharacter((c) => { character = c; layout(); });
 api.onAct(({ anim, ms }) => { act = { anim, until: Date.now() + ms }; });
 api.onSettings((s) => { settings = s; layout(); });
+window.matchMedia('(resolution: 1dppx)').addEventListener('change', layout);
+window.addEventListener('resize', layout);
 api.onPet((p) => { petData = p; });
 api.onFocus((f) => { focus = f; f.endsAt += Date.now() - f.now; updateChip(); });
 api.getData().then((d) => {

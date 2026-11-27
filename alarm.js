@@ -16,6 +16,7 @@ function show({ alarm, more }) {
 setInterval(() => {
   if (!character) return; t++;
   const bob = Math.round(Math.abs(Math.sin(t / 3)) * 8);
+  Render.fit($('cv'), 128, character.size);
   Render.renderPet(ctx, character, character.rig ? 'alarm' : t % 6 < 3 ? 'surprised' : 'happy', { bob: character.rig ? 0 : bob, acc: equipped });
 }, 70);
 const done = (fn) => () => { if (stopSound) stopSound(); stopSound = null; fn(); };

@@ -37,6 +37,7 @@ setInterval(() => {
   for (const pc of petCanvases) {
     if (!pc.canvas.offsetParent) continue; // 안 보이면 생략
     const ch = pc.character ? pc.character() : App.d.character; if (!ch) continue;
+    if (pc.fit) Render.fit(pc.canvas, pc.fit, ch.size);
     Render.renderPet(pc.canvas.getContext('2d'), ch, pc.frame ? pc.frame(animT) : (animT % 40 < 2 ? 'blink' : 'idle'),
       { bob: pc.bob ? pc.bob(animT) : 0, acc: pc.acc ? pc.acc() : App.d.pet.equipped });
   }

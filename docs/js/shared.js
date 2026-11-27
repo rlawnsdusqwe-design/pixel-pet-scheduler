@@ -87,7 +87,18 @@
     return out;
   }
 
-  root.Shared = { pad, ymd, hm, parseYmd, addDays, clamp, uid, occursOn, eventsOn, upcoming, REPEAT_LABEL,
+  // 캐릭터 표시 크기: 도트 1칸이 실제 화면에서 정수 픽셀이 되도록 맞춤 (Windows 125%/150% 배율 대응)
+  // scale: 설정값(32px 단위), size: 캐릭터 격자(32/64/128), dpr: 화면 배율
+  function petDisplay(scale, size, dpr) {
+    dpr = dpr || 1;
+    const want = 32 * scale * dpr;                       // 원하는 실제 픽셀 폭
+    let dev = size * Math.max(1, Math.round(want / size)); // 격자 크기의 정수배
+    let smooth = false;
+    if (dev > want * 1.3 && want < size) { dev = Math.round(want); smooth = true; } // 격자보다 작게 보일 땐 부드럽게 축소
+    const px = dev / 128;                                // 128 논리 좌표 → 실제 픽셀 배율
+    return { px, smooth, cssW: dev / dpr, cssH: (168 * px) / dpr, backW: Math.round(128 * px), backH: Math.round(168 * px) };
+  }
+  root.Shared = { petDisplay, pad, ymd, hm, parseYmd, addDays, clamp, uid, occursOn, eventsOn, upcoming, REPEAT_LABEL,
     CATEGORIES, catOf, levelInfo, FOODS, ACCESSORIES, needsOf };
   if (typeof module !== 'undefined') module.exports = root.Shared;
 })(typeof window !== 'undefined' ? window : globalThis);

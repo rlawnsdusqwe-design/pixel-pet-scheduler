@@ -55,6 +55,8 @@ const Editor = (() => {
   $('#toolSeg').addEventListener('click', (e) => { if (e.target.dataset.tool) setTool(e.target.dataset.tool); });
 
   function renderBoard() {
+    const N0 = ch.size, dpr = window.devicePixelRatio || 1, back = N0 * Math.max(1, Math.round(512 * dpr / N0));
+    if (board.width !== back) { board.width = board.height = back; board.style.width = board.style.height = (back / dpr) + 'px'; }
     const N = ch.size, g = ch.frames[cur], k = board.width / N;
     bctx.clearRect(0, 0, board.width, board.height);
     if (cur !== 'idle') { bctx.globalAlpha = 0.18; for (let i = 0; i < N * N; i++) if (ch.frames.idle[i]) { bctx.fillStyle = ch.frames.idle[i]; bctx.fillRect((i % N) * k, ((i / N) | 0) * k, k, k); } bctx.globalAlpha = 1; }
@@ -120,7 +122,7 @@ const Editor = (() => {
 
   // 미리보기 애니메이션
   const SEQ = ['idle', 'idle', 'idle', 'blink', 'idle', 'walk1', 'walk2', 'walk1', 'walk2', 'happy', 'happy', 'eat', 'idle', 'eat', 'surprised', 'surprised', 'sad', 'sad', 'sleep', 'sleep'];
-  petCanvases.push({ canvas: $('#preview'), character: () => ch, frame: (t) => SEQ[Math.floor(t / 3) % SEQ.length], acc: () => ($('#pvAcc').checked ? App.d.pet.equipped : null) });
+  petCanvases.push({ canvas: $('#preview'), fit: 128, character: () => ch, frame: (t) => SEQ[Math.floor(t / 3) % SEQ.length], acc: () => ($('#pvAcc').checked ? App.d.pet.equipped : null) });
 
   // ---------- 그림 → 도트 ----------
   $('#optColors').addEventListener('input', (e) => ($('#colorsN').textContent = e.target.value));

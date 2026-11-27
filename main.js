@@ -55,7 +55,8 @@ function saveData() {
 let pet = null, panel = null, alarmWin = null, tray = null, gameWin = null;
 const widgetWins = {};
 function petSize() {
-  const cssW = 32 * data.settings.scale, cssH = Math.round(cssW * 84 / 64);
+  const dpr = pet && !pet.isDestroyed() ? screen.getDisplayMatching(pet.getBounds()).scaleFactor : screen.getPrimaryDisplay().scaleFactor;
+  const d = S.petDisplay(data.settings.scale, data.character.size, dpr), cssW = Math.ceil(d.cssW), cssH = Math.ceil(d.cssH);
   return { w: Math.max(260, cssW + 60), h: cssH + 140, cssW, cssH };
 }
 const st = { x: 0, y: 0, vy: 0, dir: 1, mode: 'idle', timer: 60, jumpT: 0, sent: '', targetX: null, wokeUntil: 0, alarmActive: false };
@@ -469,7 +470,7 @@ function buildMenu() {
     { label: '⚙️ 설정', click: () => openPanel('settings') },
     { label: data.settings.followCursor ? '🖱 따라다니기 끄기' : '🖱 마우스 따라오기', click: () => setSettings({ followCursor: !data.settings.followCursor }) },
     { label: data.settings.walking ? '⏸ 제자리에 있기' : '▶ 돌아다니기', click: () => setSettings({ walking: !data.settings.walking }) },
-    { label: pet && pet.isVisible() ? '🙈 숨기기' : '👀 보이기', click: () => { if (pet.isVisible()) pet.hide(); else pet.show(); refreshTray(); } },
+    { label: pet && pet.isVisible() ? '🙈 숨기기' : '👀 보이기', click: () => { if (pet.isVisible()) { userHidden = true; pet.hide(); } else { userHidden = false; pet.show(); } refreshTray(); } },
     { type: 'separator' },
     { label: '종료', click: () => app.quit() },
   ]);
@@ -555,6 +556,9 @@ ipcMain.on('game:open', () => openGame());
 ipcMain.on('game:close', () => { if (gameWin) gameWin.close(); });
 
 // =============== 시작 ===============
+// 일부 그래픽 드라이버에서 투명 창이 검게 나오거나 사라지는 문제 방지
+app.disableHardwareAcceleration();
+let userHidden = false;
 if (!app.requestSingleInstanceLock()) app.quit();
 app.on('second-instance', () => openPanel());
 app.whenReady().then(() => {
@@ -568,6 +572,16 @@ app.whenReady().then(() => {
   for (const k of ['calendar', 'daily']) if (widgetCfg(k).on) openWidget(k);
   tray = new Tray(makeTrayIcon()); tray.setToolTip('도트 펫 스케줄러'); tray.on('click', () => openPanel()); refreshTray();
   setInterval(tick, 33);
+  // 감시: Win+D·화면 잠금·모니터 변경 뒤 캐릭터 창이 숨겨진 채 남지 않도록
+  setInterval(() => {
+    if (!pet || pet.isDestroyed()) { createPet(); return; }
+    if (userHidden || gameWin) return;
+    if (!pet.isVisible() || pet.isMinimized()) { pet.showInactive(); pet.setAlwaysOnTop(true, 'screen-saver'); }
+    const b = pet.getBounds(), on = screen.getAllDisplays().some((d) => b.x + b.width > d.bounds.x && b.x < d.bounds.x + d.bounds.width && b.y < d.bounds.y + d.bounds.height && b.y + b.height > d.bounds.y);
+    if (!on) { const wa = screen.getPrimaryDisplay().workArea; st.x = wa.x + wa.width * 0.6; st.mode = 'fall'; st.y = wa.y; }
+  }, 3000);
+  screen.on('display-metrics-changed', () => { resizePet(); if (pet) pet.webContents.send('data:settings', data.settings); });
+  screen.on('display-removed', () => { const wa = screen.getPrimaryDisplay().workArea; st.x = wa.x + wa.width * 0.6; resizePet(); });
   setInterval(focusTick, 1000);
   setInterval(checkReminders, 10000);
   setInterval(() => { decay(1); data.pet.lastSeen = Date.now(); pushPet(); maybeGift(); dayCheck(); }, 60000);

@@ -2,7 +2,7 @@
 (() => {
   const opts = (arr, v) => arr.map((n) => `<option ${n === v ? 'selected' : ''}>${n}</option>`).join('');
   petCanvases.push({
-    canvas: $('#focusPet'),
+    canvas: $('#focusPet'), fit: 128,
     frame: (t) => { const f = App.d.focus; if (f.state === 'focus' && !f.paused) return t % 30 < 2 ? 'blink' : 'idle'; if (f.state === 'break') return t % 8 < 4 ? 'happy' : 'idle'; return t % 40 < 2 ? 'blink' : 'idle'; },
     bob: (t) => (App.d.focus.state === 'break' ? (t % 8 < 4 ? 3 : 0) : 0),
   });

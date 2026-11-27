@@ -1,6 +1,6 @@
 // 돌보기: 상태, 돌봐주기, 가방, 상점, 미니게임
 (() => {
-  petCanvases.push({ canvas: $('#petBig'), frame: (t) => (t % 40 < 2 ? 'blink' : t % 60 > 50 ? 'happy' : S.needsOf(App.d.pet).length && t % 30 > 15 ? 'sad' : 'idle'), bob: (t) => (t % 60 > 50 ? 2 : 0) });
+  petCanvases.push({ canvas: $('#petBig'), fit: 128, frame: (t) => (t % 40 < 2 ? 'blink' : t % 60 > 50 ? 'happy' : S.needsOf(App.d.pet).length && t % 30 > 15 ? 'sad' : 'idle'), bob: (t) => (t % 60 > 50 ? 2 : 0) });
   const CD = { free: ['lastFreeMeal', 60], wash: ['lastWash', 20], play: ['lastPlay', 5] };
 
   function cdText(key) {
