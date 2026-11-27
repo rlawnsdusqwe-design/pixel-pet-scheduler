@@ -168,7 +168,7 @@
     ctx.save();
     if (opts.flip) { ctx.translate(CW, 0); ctx.scale(-1, 1); }
     ctx.translate(0, -(opts.bob || 0));
-    ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = !!opts.smooth;
     const bodyP = pose.body || {};
     const draw = (k, img, extra = {}) => {
       const L = rig.parts[k], q = pose[k] || {}, inherit = k === 'legL' || k === 'legR' || k === 'body' ? {} : bodyP;
@@ -192,8 +192,25 @@
   }
 
   function renderPet(ctx, ch, frameName = 'idle', opts = {}) {
-    const { flip = false, bob = 0, acc = null, clear = true } = opts;
-    if (clear) ctx.clearRect(0, 0, CW, CH);
+    const px = opts.px || ctx.canvas._px || 1, smooth = opts.smooth != null ? opts.smooth : !!ctx.canvas._smooth;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (opts.clear !== false) ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.setTransform(px, 0, 0, px, 0, 0);   // 128x168 논리 좌표를 실제 해상도로
+    try { renderBody(ctx, ch, frameName, { ...opts, smooth }); } finally { ctx.restore(); }
+  }
+  // 캔버스를 화면 배율에 맞춰 선명하게: 원하는 CSS 폭 기준
+  function fit(canvas, cssW, size) {
+    const dpr = window.devicePixelRatio || 1, key = cssW + '|' + size + '|' + dpr;
+    if (canvas._fitKey === key) return; canvas._fitKey = key;
+    const d = root.Shared.petDisplay(cssW / 32, size, dpr);
+    canvas.width = d.backW; canvas.height = d.backH; canvas._px = d.px; canvas._smooth = d.smooth;
+    canvas.style.width = d.cssW + 'px'; canvas.style.height = d.cssH + 'px';
+    canvas.style.imageRendering = d.smooth ? 'auto' : 'pixelated';
+  }
+  function renderBody(ctx, ch, frameName, opts) {
+    const { flip = false, bob = 0, acc = null } = opts;
+    ctx.imageSmoothingEnabled = !!opts.smooth;
     if (ch.rig) return renderRig(ctx, ch, frameName, opts);
     const N = ch.size, k = CW / N, g = frameOf(ch, frameName);
     ctx.save();
@@ -222,5 +239,5 @@
     const k = canvas.width / N;
     for (let i = 0; i < N * N; i++) if (grid[i]) { c.fillStyle = grid[i]; c.fillRect((i % N) * k, ((i / N) | 0) * k, Math.ceil(k), Math.ceil(k)); }
   }
-  root.Render = { CW, CH, HEAD, frameOf, renderPet, drawGrid, bakeRig, ANIMS };
+  root.Render = { CW, CH, HEAD, frameOf, renderPet, drawGrid, bakeRig, ANIMS, fit };
 })(window);
