@@ -2,6 +2,8 @@
 
 바탕화면을 걸어다니는 도트 캐릭터 **벌꿀오소리 릴리**가 일정·할 일·알람을 챙겨주는 Windows 데스크톱 앱입니다.
 
+**소개·다운로드 페이지: https://rlawnsdusqwe-design.github.io/pixel-pet-scheduler/**
+
 ## 다운로드
 
 **[최신 버전 받기 (Windows, zip)](https://github.com/rlawnsdusqwe-design/pixel-pet-scheduler/raw/main/download/PixelPetScheduler-win.zip)**
